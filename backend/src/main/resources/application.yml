@@ -1,0 +1,35 @@
+server:
+  # 8080 은 이 개발 머신의 다른 컨테이너가 사용 중이므로 8090 을 쓴다.
+  port: ${SERVER_PORT:8090}
+
+spring:
+  application:
+    name: tilink-backend
+
+  datasource:
+    # 포트 5434 는 docker-compose.yml 에서 매핑한 값 (5432/5433 은 이미 사용 중)
+    url: ${DB_URL:jdbc:postgresql://localhost:5434/tilink}
+    username: ${DB_USERNAME:tilink}
+    password: ${DB_PASSWORD:tilink}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      # 스키마의 주인은 Flyway. JPA 는 엔티티와 실제 테이블이 일치하는지 "검증만" 한다.
+      # (update 로 두면 JPA 가 테이블을 임의로 바꿔 Flyway 와 충돌한다)
+      ddl-auto: validate
+    # 트랜잭션 밖(View 렌더링 시점)에서 지연 로딩이 일어나는 것을 막는다.
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    # V1 이 실행하는 CREATE EXTENSION 은 슈퍼유저 권한이 필요할 수 있다.
+    baseline-on-migrate: true
+
+logging:
+  level:
+    "[org.hibernate.SQL]": debug
