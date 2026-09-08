@@ -1,0 +1,10 @@
+# 환경변수 파일
+.env
+.env.*
+!.env.example
+
+# OS
+.DS_Store
+
+# 업로드된 학습자료 파일
+uploads/

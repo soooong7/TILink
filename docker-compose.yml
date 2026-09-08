@@ -1,0 +1,20 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg17
+    container_name: tilink-postgres
+    environment:
+      POSTGRES_DB: tilink
+      POSTGRES_USER: tilink
+      POSTGRES_PASSWORD: tilink 
+    ports:
+      - "5434:5432"
+    volumes:
+      - tilink-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tilink -d tilink"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  tilink-pgdata:
