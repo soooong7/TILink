@@ -19,10 +19,22 @@ spring:
       hibernate:
         format_sql: true
 
+  # 업로드 파일 크기 제한. 넘으면 MaxUploadSizeExceededException -> 413 FILE_TOO_LARGE 로 응답한다.
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
+
   flyway:
     enabled: true
     locations: classpath:db/migration
     baseline-on-migrate: true
+
+storage:
+  local:
+    # 업로드된 학습자료가 저장되는 루트 디렉터리. 상대 경로면 실행 디렉터리(backend/) 기준이다.
+    # 나중에 S3 로 옮기면 FileStorage 구현체만 갈아끼우면 되고 이 설정은 로컬 구현 전용이다.
+    root: ${STORAGE_ROOT:./uploads}
 
 jwt:
   secret: ${JWT_SECRET}
