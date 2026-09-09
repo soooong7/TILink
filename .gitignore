@@ -8,3 +8,9 @@
 
 # 업로드된 학습자료 파일
 uploads/
+
+# IDE
+/.vscode
+
+docs/
+CLAUDE.md
