@@ -1,0 +1,41 @@
+/*
+ * 색은 여기서만 정의하고 컴포넌트는 변수만 참조한다.
+ * 목업 기준: 네비바/포인트는 다크 네이비, 버튼·태그 강조는 블루, 배경은 화이트.
+ */
+:root {
+  --color-navy: #10163e;
+  --color-navy-soft: #1c2454;
+  --color-blue: #2233c4;
+  --color-blue-hover: #1b299e;
+  --color-blue-weak: #eef0fd;
+
+  --color-bg: #ffffff;
+  --color-bg-subtle: #f4f5fc;
+  --color-border: #e3e5f0;
+
+  --color-text: #10163e;
+  --color-text-muted: #6b7192;
+  --color-text-invert: #ffffff;
+
+  --color-danger: #c42233;
+  --color-warning-bg: #fdf2dc;
+  --color-warning-text: #8a6100;
+  --color-success-bg: #e6f4ec;
+  --color-success-text: #1b6b41;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+
+  --shadow-card: 0 1px 2px rgba(16, 22, 62, 0.06);
+
+  --layout-max: 1080px;
+}
