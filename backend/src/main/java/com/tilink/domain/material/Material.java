@@ -54,9 +54,16 @@ public class Material {
     @Column(name = "title", length = 255, nullable = false)
     private String title;
 
-    /** 업로드된 PDF 파일 경로 */
+    /**
+     * 파일 저장소 안에서 파일을 가리키는 키. 절대경로가 아니라 저장 루트 기준 상대 키다.
+     * (저장 루트가 바뀌거나 S3 로 옮겨도 이 값을 고치지 않아도 되게 하기 위함)
+     */
     @Column(name = "file_url", length = 512, nullable = false)
     private String fileUrl;
+
+    /** 사용자가 업로드한 원본 파일명. 실제 저장 파일명은 UUID 라 화면 표시용으로만 쓴다. */
+    @Column(name = "original_file_name", length = 255, nullable = false)
+    private String originalFileName;
 
     /**
      * EnumType.STRING: DB에 0,1,2 같은 숫자가 아니라 'UPLOADED' 문자열 그대로 저장한다.
@@ -71,11 +78,12 @@ public class Material {
     private LocalDateTime uploadedAt;
 
     @Builder
-    private Material(User user, Subject subject, String title, String fileUrl) {
+    private Material(User user, Subject subject, String title, String fileUrl, String originalFileName) {
         this.user = user;
         this.subject = subject;
         this.title = title;
         this.fileUrl = fileUrl;
+        this.originalFileName = originalFileName;
         // 업로드 직후 상태는 항상 UPLOADED 로 시작한다.
         this.processingStatus = ProcessingStatus.UPLOADED;
     }

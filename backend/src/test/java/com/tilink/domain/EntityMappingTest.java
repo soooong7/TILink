@@ -171,7 +171,8 @@ class EntityMappingTest {
                 .user(user)
                 .subject(subject)
                 .title("Docker 컨테이너 및 Docker Compose")
-                .fileUrl("/files/docker.pdf")
+                .fileUrl(user.getId() + "/2026/09/" + UUID.randomUUID() + ".pdf")
+                .originalFileName("docker.pdf")
                 .build());
     }
 
