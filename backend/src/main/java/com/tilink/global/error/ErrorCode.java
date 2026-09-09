@@ -20,6 +20,14 @@ public enum ErrorCode {
     UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "인증이 필요합니다."),
     FORBIDDEN(HttpStatus.FORBIDDEN, "접근 권한이 없습니다."),
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다."),
+    SUBJECT_NOT_FOUND(HttpStatus.NOT_FOUND, "과목을 찾을 수 없습니다."),
+    // 남의 자료를 조회한 경우도 403 이 아니라 이 404 로 응답한다.
+    // 403 으로 구분해 주면 "그 ID 의 자료가 존재한다"는 사실이 외부에 노출된다.
+    MATERIAL_NOT_FOUND(HttpStatus.NOT_FOUND, "학습자료를 찾을 수 없습니다."),
+    INVALID_FILE(HttpStatus.BAD_REQUEST, "PDF 파일만 업로드할 수 있습니다."),
+    // 413. Spring 7 에서 PAYLOAD_TOO_LARGE 는 CONTENT_TOO_LARGE 로 이름이 바뀌었다(같은 코드).
+    FILE_TOO_LARGE(HttpStatus.CONTENT_TOO_LARGE, "업로드할 수 있는 파일 크기를 초과했습니다."),
+    FILE_STORAGE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "파일을 저장하지 못했습니다."),
     INTERNAL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 오류가 발생했습니다.");
 
     private final HttpStatus status;
