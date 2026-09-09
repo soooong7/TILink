@@ -1,0 +1,87 @@
+.shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+.nav {
+  background: var(--color-navy);
+  color: var(--color-text-invert);
+}
+
+.navInner {
+  max-width: var(--layout-max);
+  margin: 0 auto;
+  padding: var(--space-4) var(--space-5);
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  color: var(--color-text-invert);
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.menu {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  margin: 0 auto;
+}
+
+.menuItem {
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 600;
+  padding: var(--space-1) 0;
+  border-bottom: 2px solid transparent;
+}
+
+.menuItem:hover {
+  color: var(--color-text-invert);
+}
+
+.menuItemActive {
+  color: var(--color-text-invert);
+  border-bottom-color: var(--color-blue);
+}
+
+/* TIL·관련 학습은 4단계 이후 기능이라 자리만 잡아두고 눌리지 않게 둔다. */
+.menuItemDisabled {
+  color: rgba(255, 255, 255, 0.35);
+  font-weight: 600;
+  cursor: not-allowed;
+}
+
+.account {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: 14px;
+}
+
+.userName {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.logout {
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-text-invert);
+  padding: var(--space-1) var(--space-3);
+  cursor: pointer;
+}
+
+.logout:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.main {
+  flex: 1;
+  background: var(--color-bg);
+}
