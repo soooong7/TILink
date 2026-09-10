@@ -36,6 +36,13 @@ storage:
     # 나중에 S3 로 옮기면 FileStorage 구현체만 갈아끼우면 되고 이 설정은 로컬 구현 전용이다.
     root: ${STORAGE_ROOT:./uploads}
 
+ai:
+  service:
+    # FastAPI(ai-service) 주소. 로컬은 8000 포트로 띄운다.
+    base-url: ${AI_SERVICE_URL:http://localhost:8000}
+    # 처리 완료가 아니라 "요청 접수(202)" 응답까지의 대기 시간이라 짧게 잡는다.
+    timeout: ${AI_SERVICE_TIMEOUT:5s}
+
 jwt:
   secret: ${JWT_SECRET}
   expiration-minutes: ${JWT_EXPIRATION_MINUTES:60}

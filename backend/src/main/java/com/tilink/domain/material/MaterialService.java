@@ -1,6 +1,7 @@
 package com.tilink.domain.material;
 
 import com.tilink.domain.material.dto.MaterialResponse;
+import com.tilink.domain.material.event.MaterialUploadedEvent;
 import com.tilink.domain.material.dto.MaterialUploadRequest;
 import com.tilink.domain.subject.Subject;
 import com.tilink.domain.subject.SubjectRepository;
@@ -12,6 +13,7 @@ import com.tilink.global.storage.FileStorage;
 import com.tilink.global.storage.StoredFile;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -35,12 +37,16 @@ public class MaterialService {
     private final SubjectRepository subjectRepository;
     private final UserRepository userRepository;
     private final FileStorage fileStorage;
+    private final ApplicationEventPublisher eventPublisher;
 
     /**
      * PDF 를 저장소에 저장하고 학습자료로 등록한다.
      *
      * <p>파일 저장은 DB 트랜잭션이 롤백돼도 되돌아가지 않는다. 그래서 DB 저장이 실패하면
      * 방금 쓴 파일을 직접 지워 고아 파일이 남지 않게 한다.
+     *
+     * <p>저장이 끝나면 AI 분석 요청 이벤트를 발행한다. 여기서 FastAPI 를 직접 호출하지 않는
+     * 이유는 커밋 전에 요청이 나가면 안 되기 때문이다 (MaterialUploadedEventListener 참고).
      */
     @Transactional
     public MaterialResponse upload(String userId, MaterialUploadRequest request, MultipartFile file) {
@@ -60,6 +66,7 @@ public class MaterialService {
                     .fileUrl(storedFile.key())
                     .originalFileName(storedFile.originalFileName())
                     .build());
+            eventPublisher.publishEvent(new MaterialUploadedEvent(material.getId()));
             return MaterialResponse.from(material);
         } catch (RuntimeException e) {
             fileStorage.delete(storedFile.key());
