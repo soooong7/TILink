@@ -1,13 +1,25 @@
 import { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { findMaterial } from '../api/materials';
+import Button from '../components/ui/Button';
 import StatusBadge from '../components/ui/StatusBadge';
 import Tag from '../components/ui/Tag';
 import { formatDateTime } from '../utils/format';
 import styles from './MaterialDetailPage.module.css';
 
+/**
+ * 처리 상태별로 TIL 생성이 불가능한 이유. DONE 이 아니면 버튼을 막고 이 문구를 보여준다.
+ * AI 초안은 material_chunks 를 컨텍스트로 쓰기 때문에 분석이 끝나야만 만들 수 있다.
+ */
+const DRAFT_BLOCKED_REASON = {
+  UPLOADED: '자료 분석이 아직 시작되지 않았습니다. 잠시 후 다시 확인해 주세요.',
+  PROCESSING: '자료를 분석하는 중입니다. 완료되면 TIL 을 만들 수 있습니다.',
+  FAILED: '자료 분석에 실패해 TIL 을 만들 수 없습니다. 파일을 다시 업로드해 주세요.',
+};
+
 export default function MaterialDetailPage() {
   const { materialId } = useParams();
+  const navigate = useNavigate();
   // 어떤 ID 의 결과인지 함께 담아둔다. 그래야 URL 이 바뀐 직후를 "로딩 중"으로
   // 렌더 시점에 판별할 수 있고, 이펙트에서 상태를 초기화하지 않아도 된다.
   const [result, setResult] = useState({ materialId: null, material: null, error: '' });
@@ -68,10 +80,20 @@ export default function MaterialDetailPage() {
             </div>
           </div>
 
-          {/* 파일 다운로드 API 와 TIL 생성은 아직 백엔드에 없다. 있는 척하지 않는다. */}
-          <p className={styles.notice}>
-            AI TIL 초안 생성과 원본 파일 다운로드는 다음 단계에서 연결됩니다.
-          </p>
+          <div className={styles.actions}>
+            <Button
+              disabled={material.processingStatus !== 'DONE'}
+              onClick={() => navigate(`/materials/${materialId}/til-draft`)}
+            >
+              AI로 TIL 만들기
+            </Button>
+            {DRAFT_BLOCKED_REASON[material.processingStatus] && (
+              <p className={styles.reason}>{DRAFT_BLOCKED_REASON[material.processingStatus]}</p>
+            )}
+          </div>
+
+          {/* 파일 다운로드 API 는 아직 백엔드에 없다. 있는 척하지 않는다. */}
+          <p className={styles.notice}>원본 파일 다운로드는 다음 단계에서 연결됩니다.</p>
         </>
       )}
     </div>

@@ -2,8 +2,13 @@ import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/useAuth';
 import styles from './AppLayout.module.css';
 
+const MENUS = [
+  { to: '/materials', label: '학습자료' },
+  { to: '/tils', label: 'TIL' },
+];
+
 // 아직 만들지 않은 화면은 라우트를 임의로 만들지 않고 비활성 메뉴로만 보여준다.
-const UPCOMING_MENUS = ['TIL', '관련 학습'];
+const UPCOMING_MENUS = ['관련 학습'];
 
 export default function AppLayout() {
   const { user, logout } = useAuth();
@@ -23,14 +28,17 @@ export default function AppLayout() {
           </NavLink>
 
           <div className={styles.menu}>
-            <NavLink
-              to="/materials"
-              className={({ isActive }) =>
-                `${styles.menuItem} ${isActive ? styles.menuItemActive : ''}`
-              }
-            >
-              학습자료
-            </NavLink>
+            {MENUS.map((menu) => (
+              <NavLink
+                key={menu.to}
+                to={menu.to}
+                className={({ isActive }) =>
+                  `${styles.menuItem} ${isActive ? styles.menuItemActive : ''}`
+                }
+              >
+                {menu.label}
+              </NavLink>
+            ))}
             {UPCOMING_MENUS.map((label) => (
               <span key={label} className={styles.menuItemDisabled} title="준비 중입니다">
                 {label}

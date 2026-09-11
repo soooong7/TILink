@@ -6,6 +6,9 @@ import MaterialDetailPage from './pages/MaterialDetailPage';
 import MaterialListPage from './pages/MaterialListPage';
 import NotFoundPage from './pages/NotFoundPage';
 import SignupPage from './pages/SignupPage';
+import TilDetailPage from './pages/TilDetailPage';
+import TilDraftPage from './pages/TilDraftPage';
+import TilListPage from './pages/TilListPage';
 
 export default function App() {
   return (
@@ -19,6 +22,9 @@ export default function App() {
         <Route element={<AppLayout />}>
           <Route path="/materials" element={<MaterialListPage />} />
           <Route path="/materials/:materialId" element={<MaterialDetailPage />} />
+          <Route path="/materials/:materialId/til-draft" element={<TilDraftPage />} />
+          <Route path="/tils" element={<TilListPage />} />
+          <Route path="/tils/:tilId" element={<TilDetailPage />} />
         </Route>
       </Route>
 

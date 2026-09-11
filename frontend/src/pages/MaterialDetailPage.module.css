@@ -69,3 +69,16 @@
   padding: var(--space-3);
   font-size: 14px;
 }
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin-top: var(--space-5);
+  flex-wrap: wrap;
+}
+
+.reason {
+  color: var(--color-text-muted);
+  font-size: 13px;
+}

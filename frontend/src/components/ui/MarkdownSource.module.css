@@ -1,0 +1,54 @@
+.wrapper {
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--color-navy);
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-navy-soft);
+  color: #c9cdf0;
+  font-size: 13px;
+}
+
+.file {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--color-text-invert);
+}
+
+.lines {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  opacity: 0.7;
+}
+
+.copy {
+  margin-left: auto;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text-invert);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 6px 12px;
+  cursor: pointer;
+}
+
+.copy:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.code {
+  margin: 0;
+  padding: var(--space-5);
+  max-height: 560px;
+  overflow: auto;
+  color: #e8eaf6;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 13px;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  word-break: break-word;
+}

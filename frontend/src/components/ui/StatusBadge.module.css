@@ -20,3 +20,8 @@
   background: var(--color-success-bg);
   color: var(--color-success-text);
 }
+
+.failed {
+  background: #fdecee;
+  color: var(--color-danger);
+}

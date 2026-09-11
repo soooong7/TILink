@@ -5,6 +5,7 @@ const STATUS = {
   UPLOADED: { label: '업로드됨', className: styles.uploaded },
   PROCESSING: { label: '분석중', className: styles.processing },
   DONE: { label: '완료', className: styles.done },
+  FAILED: { label: '분석 실패', className: styles.failed },
 };
 
 export default function StatusBadge({ status }) {

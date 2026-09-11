@@ -1,0 +1,75 @@
+.back {
+  display: inline-block;
+  margin-bottom: var(--space-4);
+  color: var(--color-text-muted);
+  font-size: 14px;
+}
+
+.back:hover {
+  color: var(--color-blue);
+}
+
+.title {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--color-navy);
+}
+
+.meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+  color: var(--color-text-muted);
+  font-size: 13px;
+}
+
+.sep {
+  opacity: 0.5;
+}
+
+.link {
+  color: var(--color-blue);
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+
+.notice {
+  margin-top: var(--space-4);
+  background: var(--color-warning-bg);
+  color: var(--color-warning-text);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  font-size: 13px;
+}
+
+.card {
+  margin: var(--space-5) 0 var(--space-7);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  box-shadow: var(--shadow-card);
+}
+
+.pane {
+  padding-top: var(--space-5);
+}
+
+.hint {
+  color: var(--color-text-muted);
+  font-size: 13px;
+  margin-bottom: var(--space-3);
+}
+
+.error {
+  background: #fdecee;
+  color: var(--color-danger);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  font-size: 14px;
+}
