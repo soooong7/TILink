@@ -1,0 +1,118 @@
+/* 목록 카드는 TIL 목록(TilListPage)과 같은 모양이다. 같은 성격의 목록이 화면마다
+   다르게 보이지 않도록 간격·모서리·그림자를 맞췄다. */
+
+.head {
+  margin-bottom: var(--space-5);
+}
+
+.title {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--color-navy);
+}
+
+.subtitle {
+  margin-top: var(--space-1);
+  color: var(--color-text-muted);
+  font-size: 14px;
+}
+
+.count {
+  margin-bottom: var(--space-3);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-navy);
+}
+
+.list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.item {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4) var(--space-5);
+  box-shadow: var(--shadow-card);
+  transition: border-color 0.15s ease;
+}
+
+.item:hover {
+  border-color: var(--color-blue);
+}
+
+.card {
+  display: block;
+  color: inherit;
+}
+
+.cardHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.cardTitle {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-navy);
+}
+
+.cardMeta {
+  margin-top: var(--space-2);
+  color: var(--color-text-muted);
+  font-size: 13px;
+}
+
+.sep {
+  margin: 0 var(--space-2);
+  opacity: 0.5;
+}
+
+/* ---------- 경과일 배지 ---------- */
+
+.days {
+  flex-shrink: 0;
+  border-radius: 999px;
+  padding: 2px var(--space-3);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.normal {
+  background: var(--color-bg-subtle);
+  color: var(--color-text-muted);
+}
+
+.warning {
+  background: var(--color-warning-bg);
+  color: var(--color-warning-text);
+}
+
+.urgent {
+  background: #fdecee;
+  color: var(--color-danger);
+}
+
+.hint {
+  margin-top: var(--space-4);
+  color: var(--color-text-muted);
+  font-size: 13px;
+}
+
+.empty {
+  padding: var(--space-7) 0;
+  text-align: center;
+  color: var(--color-text-muted);
+}
+
+.error {
+  background: #fdecee;
+  color: var(--color-danger);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  font-size: 14px;
+}

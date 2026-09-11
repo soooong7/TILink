@@ -5,10 +5,12 @@ import styles from './AppLayout.module.css';
 const MENUS = [
   { to: '/materials', label: '학습자료' },
   { to: '/tils', label: 'TIL' },
+  { to: '/review', label: '복습' },
 ];
 
-// 아직 만들지 않은 화면은 라우트를 임의로 만들지 않고 비활성 메뉴로만 보여준다.
-const UPCOMING_MENUS = ['관련 학습'];
+// '관련 학습' 은 TIL 상세 안의 기능이라 별도 화면이 없다. 비활성 메뉴로 남겨두면
+// 영영 열리지 않는 메뉴가 되므로 지웠다.
+const UPCOMING_MENUS = [];
 
 export default function AppLayout() {
   const { user, logout } = useAuth();

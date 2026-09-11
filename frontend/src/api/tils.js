@@ -78,3 +78,16 @@ export async function updateTil(tilId, { title, content, document, tags }) {
 export async function deleteTil(tilId) {
   await client.delete(`/tils/${tilId}`);
 }
+
+/**
+ * GET /api/tils/needs-review -> [TilReviewResponse]
+ *
+ * 7일 이상 열어보지 않은 TIL 을 오래된 순으로 돌려준다. 기준값은 마지막 열람 시각이고,
+ * 한 번도 열지 않았다면 작성 시각이다(neverReviewed=true).
+ *
+ * 별도의 배치·스케줄러 없이 이 호출 시점에 경과일을 계산한다.
+ */
+export async function findTilsNeedingReview() {
+  const { data } = await client.get('/tils/needs-review');
+  return data;
+}
