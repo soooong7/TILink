@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.jayway.jsonpath.JsonPath;
 import com.tilink.domain.user.UserRepository;
+import com.tilink.global.security.JwtTokenProvider;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
@@ -36,6 +37,7 @@ class AuthIntegrationTest {
     @Autowired private MockMvc mockMvc;
     @Autowired private UserRepository userRepository;
     @Autowired private PasswordEncoder passwordEncoder;
+    @Autowired private JwtTokenProvider jwtTokenProvider;
 
     @Test
     void 회원가입에_성공하면_비밀번호가_BCrypt_로_암호화되어_저장된다() throws Exception {
@@ -162,5 +164,16 @@ class AuthIntegrationTest {
                 .content("""
                         {"email": "%s", "password": "%s"}
                         """.formatted(email, password));
+    }
+
+    @Test
+    void 없는_경로를_요청하면_404_를_반환한다() throws Exception {
+        // 404 가 401 로 바뀌면 클라이언트가 토큰 만료로 오해해 로그아웃시킨다.
+        // (stateless 라 /error 재인가 시점에는 SecurityContext 가 비어 있다)
+        String token = jwtTokenProvider.createAccessToken("user-id", "someone@tilink.dev");
+
+        mockMvc.perform(get("/api/no-such-endpoint")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
+                .andExpect(status().isNotFound());
     }
 }
