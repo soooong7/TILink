@@ -8,6 +8,7 @@ import NotFoundPage from './pages/NotFoundPage';
 import SignupPage from './pages/SignupPage';
 import TilDetailPage from './pages/TilDetailPage';
 import TilDraftPage from './pages/TilDraftPage';
+import TilEditPage from './pages/TilEditPage';
 import TilListPage from './pages/TilListPage';
 
 export default function App() {
@@ -25,6 +26,7 @@ export default function App() {
           <Route path="/materials/:materialId/til-draft" element={<TilDraftPage />} />
           <Route path="/tils" element={<TilListPage />} />
           <Route path="/tils/:tilId" element={<TilDetailPage />} />
+          <Route path="/tils/:tilId/edit" element={<TilEditPage />} />
         </Route>
       </Route>
 

@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
-import { findTil } from '../api/tils';
+import { Link, useNavigate, useParams } from 'react-router-dom';
+import { deleteTil, findTil } from '../api/tils';
 import RelatedTils from '../components/RelatedTils';
+import Button from '../components/ui/Button';
+import ConfirmDialog from '../components/ui/ConfirmDialog';
 import MarkdownSource from '../components/ui/MarkdownSource';
 import MarkdownView from '../components/ui/MarkdownView';
 import Tabs from '../components/ui/Tabs';
@@ -28,8 +30,10 @@ const DOCUMENT_TABS = [
  */
 export default function TilDetailPage() {
   const { tilId } = useParams();
+  const navigate = useNavigate();
   const [result, setResult] = useState({ tilId: null, til: null, error: '' });
   const [tab, setTab] = useState('til');
+  const [confirming, setConfirming] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -48,6 +52,12 @@ export default function TilDetailPage() {
   const loading = result.tilId !== tilId;
   const { til, error } = loading ? { til: null, error: '' } : result;
 
+  const handleDelete = async () => {
+    await deleteTil(tilId);
+    // 방금 지운 TIL 의 상세로 되돌아오지 않도록 히스토리에서 이 화면을 치운다.
+    navigate('/tils', { replace: true });
+  };
+
   return (
     <div className="page">
       <Link to="/materials" className={styles.back}>
@@ -59,7 +69,17 @@ export default function TilDetailPage() {
 
       {til && (
         <>
-          <h1 className={styles.title}>{til.title}</h1>
+          <div className={styles.head}>
+            <h1 className={styles.title}>{til.title}</h1>
+            <div className={styles.headActions}>
+              <Button variant="secondary" onClick={() => navigate(`/tils/${tilId}/edit`)}>
+                수정
+              </Button>
+              <Button variant="secondary" onClick={() => setConfirming(true)}>
+                삭제
+              </Button>
+            </div>
+          </div>
 
           <div className={styles.meta}>
             <span>{formatDateTime(til.createdAt)}</span>
@@ -108,6 +128,15 @@ export default function TilDetailPage() {
           </div>
 
           <RelatedTils tilId={til.id} ready={til.embeddingReady} />
+
+          {confirming && (
+            <ConfirmDialog
+              title="이 TIL 을 삭제할까요?"
+              description={`"${til.title}" 이 삭제됩니다. 되돌릴 수 없습니다.\n학습자료와 원본 PDF 는 그대로 남습니다.`}
+              onConfirm={handleDelete}
+              onClose={() => setConfirming(false)}
+            />
+          )}
         </>
       )}
     </div>

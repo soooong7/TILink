@@ -60,3 +60,21 @@ export async function findRelatedTils(tilId, limit) {
   });
   return data.relatedTils;
 }
+
+/**
+ * PATCH /api/tils/{id} -> TilResponse
+ *
+ * 보내지 않은 필드는 바뀌지 않는다. 태그는 보낸 목록으로 통째로 교체된다
+ * (빈 배열이면 태그를 모두 뗀다).
+ *
+ * 본문(content)이 실제로 바뀌면 서버가 임베딩을 다시 만든다.
+ */
+export async function updateTil(tilId, { title, content, document, tags }) {
+  const { data } = await client.patch(`/tils/${tilId}`, { title, content, document, tags });
+  return data;
+}
+
+// DELETE /api/tils/{id} — 되돌릴 수 없으므로 화면에서 확인을 받은 뒤 호출한다.
+export async function deleteTil(tilId) {
+  await client.delete(`/tils/${tilId}`);
+}

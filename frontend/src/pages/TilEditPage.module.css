@@ -1,0 +1,105 @@
+/* 초안 화면(TilDraftPage)과 같은 레이아웃이다. 두 화면 모두 "빵부스러기 - 카드 - 하단 버튼"
+   구조라 클래스 이름을 맞춰 두었다. */
+
+.crumbs {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+  color: var(--color-text-muted);
+  font-size: 13px;
+}
+
+.crumbs a:hover {
+  color: var(--color-blue);
+}
+
+.sep {
+  opacity: 0.5;
+}
+
+.card {
+  margin-bottom: var(--space-5);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  box-shadow: var(--shadow-card);
+}
+
+.label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-navy);
+  margin: var(--space-5) 0 var(--space-2);
+}
+
+.label:first-child {
+  margin-top: 0;
+}
+
+.hint {
+  color: var(--color-text-muted);
+  font-size: 13px;
+  margin-top: var(--space-3);
+}
+
+.input,
+.textarea {
+  width: 100%;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  font-size: 14px;
+  font-family: inherit;
+  color: var(--color-text);
+  background: var(--color-bg);
+}
+
+.input:focus,
+.textarea:focus {
+  outline: none;
+  border-color: var(--color-blue);
+}
+
+/* 마크다운을 직접 고치는 자리라 고정폭 글꼴을 쓴다. 표·코드블록의 열이 맞아야 읽힌다. */
+.textarea {
+  resize: vertical;
+  line-height: 1.7;
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+}
+
+.pane {
+  padding-top: var(--space-5);
+}
+
+.pane .hint {
+  margin-top: 0;
+  margin-bottom: var(--space-3);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-5);
+  margin-bottom: var(--space-7);
+}
+
+.cancel {
+  color: var(--color-text-muted);
+  font-size: 14px;
+}
+
+.cancel:hover {
+  color: var(--color-blue);
+}
+
+.error {
+  margin-bottom: var(--space-4);
+  background: #fdecee;
+  color: var(--color-danger);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  font-size: 14px;
+}

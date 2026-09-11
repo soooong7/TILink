@@ -37,6 +37,16 @@
   color: var(--color-blue);
 }
 
+/* 되돌릴 수 없는 동작(삭제)용. 확인 모달의 확인 버튼에만 쓴다. */
+.danger {
+  background: var(--color-danger);
+  color: var(--color-text-invert);
+}
+
+.danger:hover:not(:disabled) {
+  background: #a51b2a;
+}
+
 .ghost {
   background: transparent;
   color: var(--color-text-muted);

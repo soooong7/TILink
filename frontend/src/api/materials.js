@@ -32,3 +32,23 @@ export async function findMaterial(materialId) {
   const { data } = await client.get(`/materials/${materialId}`);
   return data;
 }
+
+/**
+ * PATCH /api/materials/{id} -> MaterialResponse
+ *
+ * 보내지 않은 필드는 서버가 건드리지 않는다. 파일 교체는 지원하지 않는다.
+ */
+export async function updateMaterial(materialId, { title, subjectId }) {
+  const { data } = await client.patch(`/materials/${materialId}`, { title, subjectId });
+  return data;
+}
+
+/**
+ * DELETE /api/materials/{id}
+ *
+ * 이 자료로 만든 TIL·청크와 저장된 PDF 까지 함께 사라진다. 되돌릴 수 없으므로
+ * 화면에서 반드시 확인을 받은 뒤 호출한다.
+ */
+export async function deleteMaterial(materialId) {
+  await client.delete(`/materials/${materialId}`);
+}
