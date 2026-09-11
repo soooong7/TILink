@@ -42,6 +42,26 @@ ai:
     base-url: ${AI_SERVICE_URL:http://localhost:8000}
     # 처리 완료가 아니라 "요청 접수(202)" 응답까지의 대기 시간이라 짧게 잡는다.
     timeout: ${AI_SERVICE_TIMEOUT:5s}
+    # TIL 초안 생성은 LLM 호출이라 실측 20초 안팎이고 긴 교안은 더 걸린다.
+    draft-timeout: ${AI_SERVICE_DRAFT_TIMEOUT:180s}
+    # 임베딩 생성·유사도 검색은 1초 안쪽이지만 여유를 둔다.
+    query-timeout: ${AI_SERVICE_QUERY_TIMEOUT:15s}
+
+til:
+  related:
+    # 관련 학습 조회의 하이브리드 점수 = vector-weight * 벡터유사도 + tag-weight * 태그자카드
+    # 기획서 정의대로 벡터가 주신호, 태그가 보조 신호다.
+    vector-weight: ${TIL_RELATED_VECTOR_WEIGHT:0.7}
+    tag-weight: ${TIL_RELATED_TAG_WEIGHT:0.3}
+    # 명백히 무관한 결과만 걸러내는 하한이다. "관련 있음/없음"을 이 값으로 가를 수는 없다.
+    # 실측(긴 TIL 기준): 같은 주제 0.60 / 인접 주제 0.35 / 관련 주제 0.25 / 무관 0.23 으로
+    # 관련 주제와 무관 주제의 간격이 0.02 밖에 되지 않는다. 임계값을 높이면(0.3) 실제로
+    # 관련 있는 TIL 부터 사라진다. 품질은 임계값이 아니라 순위와 limit 으로 관리한다.
+    min-similarity: ${TIL_RELATED_MIN_SIMILARITY:0.2}
+    # 태그로 재정렬할 것이므로 후보는 최종 개수보다 넉넉히 받는다.
+    # 벡터 순위 6~10위에 태그가 겹치는 TIL 이 있을 수 있다.
+    candidate-multiplier: ${TIL_RELATED_CANDIDATE_MULTIPLIER:4}
+    default-limit: ${TIL_RELATED_DEFAULT_LIMIT:5}
 
 jwt:
   secret: ${JWT_SECRET}

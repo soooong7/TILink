@@ -2,6 +2,8 @@ package com.tilink.domain.material;
 
 import com.tilink.domain.material.dto.MaterialResponse;
 import com.tilink.domain.material.dto.MaterialUploadRequest;
+import com.tilink.domain.til.TilService;
+import com.tilink.domain.til.dto.TilDraftResponse;
 import com.tilink.global.security.AuthenticatedUser;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -31,6 +33,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class MaterialController {
 
     private final MaterialService materialService;
+    private final TilService tilService;
 
     /**
      * 학습자료 PDF 업로드.
@@ -64,5 +67,19 @@ public class MaterialController {
             @PathVariable String materialId) {
 
         return materialService.findOne(principal.id(), materialId);
+    }
+
+    /**
+     * 학습자료로부터 TIL 초안을 생성한다. 저장하지 않고 그대로 돌려준다.
+     *
+     * <p>경로가 /api/materials 아래인 이유는 "이 자료로부터 만든다"는 관계를 드러내기 위해서다.
+     * 저장된 TIL 을 다루는 API 는 /api/tils 에 있다.
+     */
+    @PostMapping("/{materialId}/til-draft")
+    public TilDraftResponse createTilDraft(
+            @AuthenticationPrincipal AuthenticatedUser principal,
+            @PathVariable String materialId) {
+
+        return tilService.createDraft(principal.id(), materialId);
     }
 }
