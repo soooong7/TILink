@@ -1,13 +1,21 @@
 package com.tilink.material;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.jayway.jsonpath.JsonPath;
+import com.tilink.domain.material.Material;
+import com.tilink.domain.material.MaterialChunk;
+import com.tilink.domain.material.MaterialChunkRepository;
 import com.tilink.domain.material.MaterialRepository;
+import com.tilink.domain.material.event.MaterialDeletedEvent;
+import com.tilink.domain.til.Til;
+import com.tilink.domain.til.TilRepository;
 import com.tilink.domain.subject.Subject;
 import com.tilink.domain.subject.SubjectRepository;
 import com.tilink.domain.user.User;
@@ -26,6 +34,8 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.test.context.event.ApplicationEvents;
+import org.springframework.test.context.event.RecordApplicationEvents;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMultipartHttpServletRequestBuilder;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,6 +50,7 @@ import org.springframework.transaction.annotation.Transactional;
 @SpringBootTest(properties = "storage.local.root=" + MaterialIntegrationTest.STORAGE_ROOT)
 @AutoConfigureMockMvc
 @Transactional
+@RecordApplicationEvents
 class MaterialIntegrationTest {
 
     static final String STORAGE_ROOT = "build/test-uploads";
@@ -50,7 +61,10 @@ class MaterialIntegrationTest {
     @Autowired private UserRepository userRepository;
     @Autowired private SubjectRepository subjectRepository;
     @Autowired private MaterialRepository materialRepository;
+    @Autowired private MaterialChunkRepository materialChunkRepository;
+    @Autowired private TilRepository tilRepository;
     @Autowired private JwtTokenProvider jwtTokenProvider;
+    @Autowired private ApplicationEvents events;
 
     private User owner;
     private String ownerToken;
@@ -192,6 +206,135 @@ class MaterialIntegrationTest {
     }
 
     // ==========================================
+    // 수정
+    // ==========================================
+
+    @Test
+    void 자료의_제목과_과목을_수정할_수_있다() throws Exception {
+        String materialId = upload(ownerToken, infra.getId(), "옛 제목", "docker.pdf");
+
+        mockMvc.perform(patch("/api/materials/{id}", materialId)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + ownerToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"title\":\"새 제목\",\"subjectId\":\"" + backend.getId() + "\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.title").value("새 제목"))
+                .andExpect(jsonPath("$.subject.id").value(backend.getId()));
+    }
+
+    @Test
+    void 수정_요청에_없는_필드는_그대로_둔다() throws Exception {
+        String materialId = upload(ownerToken, infra.getId(), "옛 제목", "docker.pdf");
+
+        mockMvc.perform(patch("/api/materials/{id}", materialId)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + ownerToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"title\":\"새 제목\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.title").value("새 제목"))
+                .andExpect(jsonPath("$.subject.id").value(infra.getId()));
+    }
+
+    @Test
+    void 없는_과목으로_수정하면_404_를_반환한다() throws Exception {
+        String materialId = upload(ownerToken, infra.getId(), "제목", "docker.pdf");
+
+        mockMvc.perform(patch("/api/materials/{id}", materialId)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + ownerToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"subjectId\":\"" + UUID.randomUUID() + "\"}"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value("SUBJECT_NOT_FOUND"));
+    }
+
+    @Test
+    void 남의_자료는_수정할_수_없다() throws Exception {
+        String materialId = upload(ownerToken, infra.getId(), "제목", "docker.pdf");
+        User other = givenUser();
+        String otherToken = jwtTokenProvider.createAccessToken(other.getId(), other.getEmail());
+
+        mockMvc.perform(patch("/api/materials/{id}", materialId)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + otherToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"title\":\"가로채기\"}"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value("MATERIAL_NOT_FOUND"));
+
+        assertThat(materialRepository.findById(materialId)).get()
+                .extracting(Material::getTitle).isEqualTo("제목");
+    }
+
+    // ==========================================
+    // 삭제
+    // ==========================================
+
+    @Test
+    void 자료를_삭제하면_연결된_TIL_과_청크도_함께_사라진다() throws Exception {
+        String materialId = upload(ownerToken, infra.getId(), "Docker 정리", "docker.pdf");
+        Material material = materialRepository.findById(materialId).orElseThrow();
+        givenTil(material);
+        givenChunk(material);
+
+        mockMvc.perform(delete("/api/materials/{id}", materialId)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + ownerToken))
+                .andExpect(status().isNoContent());
+
+        assertThat(materialRepository.findById(materialId)).isEmpty();
+        assertThat(tilRepository.findByMaterialId(materialId)).isEmpty();
+        assertThat(materialChunkRepository.countByMaterialId(materialId)).isZero();
+    }
+
+    /**
+     * PDF 삭제는 커밋 이후에 일어나는데, 이 테스트는 롤백되므로 리스너까지 가지 않는다.
+     * 그래서 여기서는 "삭제 이벤트가 올바른 저장 키로 발행되는지"까지만 확인한다.
+     */
+    @Test
+    void 자료를_삭제하면_저장된_파일을_지우도록_이벤트가_발행된다() throws Exception {
+        String materialId = upload(ownerToken, infra.getId(), "Docker 정리", "docker.pdf");
+        String fileUrl = materialRepository.findById(materialId).orElseThrow().getFileUrl();
+
+        mockMvc.perform(delete("/api/materials/{id}", materialId)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + ownerToken))
+                .andExpect(status().isNoContent());
+
+        assertThat(events.stream(MaterialDeletedEvent.class))
+                .containsExactly(new MaterialDeletedEvent(materialId, fileUrl));
+    }
+
+    @Test
+    void 남의_자료는_삭제할_수_없다() throws Exception {
+        String materialId = upload(ownerToken, infra.getId(), "제목", "docker.pdf");
+        User other = givenUser();
+        String otherToken = jwtTokenProvider.createAccessToken(other.getId(), other.getEmail());
+
+        mockMvc.perform(delete("/api/materials/{id}", materialId)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + otherToken))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value("MATERIAL_NOT_FOUND"));
+
+        assertThat(materialRepository.findById(materialId)).isPresent();
+    }
+
+    @Test
+    void 자료_상세와_목록은_연결된_TIL_개수를_함께_내려준다() throws Exception {
+        String materialId = upload(ownerToken, infra.getId(), "Docker 정리", "docker.pdf");
+        Material material = materialRepository.findById(materialId).orElseThrow();
+        givenTil(material);
+        givenTil(material);
+
+        mockMvc.perform(get("/api/materials/{id}", materialId)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + ownerToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.tilCount").value(2));
+
+        mockMvc.perform(get("/api/materials")
+                        .param("subjectId", infra.getId())
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + ownerToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[?(@.id=='" + materialId + "')].tilCount").value(2));
+    }
+
+    // ==========================================
     // 테스트 데이터 준비
     // ==========================================
 
@@ -226,6 +369,25 @@ class MaterialIntegrationTest {
                 .email(UUID.randomUUID() + "@tilink.test")
                 .password("encoded-password")
                 .name("테스트 교육생")
+                .build());
+    }
+
+    private Til givenTil(Material material) {
+        return tilRepository.save(Til.builder()
+                .user(material.getUser())
+                .material(material)
+                .title("Docker 정리 TIL")
+                .content("## 오늘 배운 내용\n\n컨테이너")
+                .build());
+    }
+
+    // 임베딩은 not null 이라 값이 필요하다. 유사도를 계산하지 않는 테스트라 내용은 무의미해도 된다.
+    private MaterialChunk givenChunk(Material material) {
+        return materialChunkRepository.save(MaterialChunk.builder()
+                .material(material)
+                .chunkIndex(0)
+                .content("컨테이너는 격리된 프로세스다.")
+                .embedding(new float[1536])
                 .build());
     }
 

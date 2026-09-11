@@ -1,10 +1,13 @@
 package com.tilink.domain.material;
 
 import com.tilink.domain.material.dto.MaterialResponse;
-import com.tilink.domain.material.event.MaterialUploadedEvent;
+import com.tilink.domain.material.dto.MaterialUpdateRequest;
 import com.tilink.domain.material.dto.MaterialUploadRequest;
+import com.tilink.domain.material.event.MaterialDeletedEvent;
+import com.tilink.domain.material.event.MaterialUploadedEvent;
 import com.tilink.domain.subject.Subject;
 import com.tilink.domain.subject.SubjectRepository;
+import com.tilink.domain.til.TilService;
 import com.tilink.domain.user.User;
 import com.tilink.domain.user.UserRepository;
 import com.tilink.global.error.BusinessException;
@@ -12,6 +15,7 @@ import com.tilink.global.error.ErrorCode;
 import com.tilink.global.storage.FileStorage;
 import com.tilink.global.storage.StoredFile;
 import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -34,8 +38,10 @@ public class MaterialService {
     private static final String PDF_EXTENSION = "pdf";
 
     private final MaterialRepository materialRepository;
+    private final MaterialChunkRepository materialChunkRepository;
     private final SubjectRepository subjectRepository;
     private final UserRepository userRepository;
+    private final TilService tilService;
     private final FileStorage fileStorage;
     private final ApplicationEventPublisher eventPublisher;
 
@@ -67,7 +73,8 @@ public class MaterialService {
                     .originalFileName(storedFile.originalFileName())
                     .build());
             eventPublisher.publishEvent(new MaterialUploadedEvent(material.getId()));
-            return MaterialResponse.from(material);
+            // 방금 만든 자료라 TIL 은 아직 하나도 없다.
+            return MaterialResponse.from(material, 0);
         } catch (RuntimeException e) {
             fileStorage.delete(storedFile.key());
             throw e;
@@ -80,13 +87,65 @@ public class MaterialService {
                 ? materialRepository.findByUserIdAndSubjectIdOrderByUploadedAtDesc(userId, subjectId)
                 : materialRepository.findByUserIdOrderByUploadedAtDesc(userId);
 
-        return materials.stream().map(MaterialResponse::from).toList();
+        // 자료마다 count 쿼리를 날리지 않도록 TIL 개수는 한 번에 모아온다.
+        Map<String, Long> tilCounts = tilService.countByMaterials(materials.stream().map(Material::getId).toList());
+        return materials.stream()
+                .map(material -> MaterialResponse.from(material, tilCounts.getOrDefault(material.getId(), 0L)))
+                .toList();
     }
 
     /** 내 학습자료 상세. 남의 자료를 요청하면 존재 여부를 알리지 않도록 404 로 응답한다. */
     public MaterialResponse findOne(String userId, String materialId) {
+        Material material = getOwnedMaterial(userId, materialId);
+        return MaterialResponse.from(material, tilService.countByMaterial(materialId));
+    }
+
+    /**
+     * 학습자료 수정. 보내지 않은 필드는 바뀌지 않는다.
+     *
+     * <p>제목과 과목만 바꾼다. 둘 다 분류상의 값이라 이미 만들어 둔 청크·임베딩에는 영향이 없고,
+     * 따라서 재분석도 필요 없다.
+     */
+    @Transactional
+    public MaterialResponse update(String userId, String materialId, MaterialUpdateRequest request) {
+        Material material = getOwnedMaterial(userId, materialId);
+
+        if (StringUtils.hasText(request.title())) {
+            material.changeTitle(request.title().trim());
+        }
+        if (StringUtils.hasText(request.subjectId()) && !request.subjectId().equals(material.getSubject().getId())) {
+            Subject subject = subjectRepository.findById(request.subjectId())
+                    .orElseThrow(() -> new BusinessException(ErrorCode.SUBJECT_NOT_FOUND));
+            material.changeSubject(subject);
+        }
+
+        return MaterialResponse.from(material, tilService.countByMaterial(materialId));
+    }
+
+    /**
+     * 학습자료 삭제. 이 자료로 만든 TIL 과 청크도 함께 사라진다.
+     *
+     * <p>DB FK 는 모두 ON DELETE CASCADE 지만 JPA 는 그 사실을 모르기 때문에, 자식(TIL·청크)부터
+     * 순서대로 지운다. 남아 있는 자식 엔티티가 지워진 부모를 가리킨 채 flush 되면 예외가 난다.
+     *
+     * <p>PDF 파일은 여기서 지우지 않고 커밋 이후에 지운다
+     * ({@link com.tilink.domain.material.event.MaterialDeletedEventListener} 참고).
+     */
+    @Transactional
+    public void delete(String userId, String materialId) {
+        Material material = getOwnedMaterial(userId, materialId);
+        String fileUrl = material.getFileUrl();
+
+        tilService.deleteAllByMaterial(materialId);
+        materialChunkRepository.deleteByMaterialId(materialId);
+        materialRepository.delete(material);
+
+        eventPublisher.publishEvent(new MaterialDeletedEvent(materialId, fileUrl));
+    }
+
+    /** 소유자까지 확인해 자료를 가져온다. 남의 자료를 요청하면 존재 여부를 알리지 않도록 404 다. */
+    private Material getOwnedMaterial(String userId, String materialId) {
         return materialRepository.findByIdAndUserId(materialId, userId)
-                .map(MaterialResponse::from)
                 .orElseThrow(() -> new BusinessException(ErrorCode.MATERIAL_NOT_FOUND));
     }
 

@@ -17,6 +17,7 @@ import com.tilink.global.error.ErrorCode;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
@@ -159,6 +160,38 @@ public class TilService {
         Til til = getOwnedTil(userId, tilId);
         tilTagService.removeTags(tilId);
         tilRepository.delete(til);
+    }
+
+    /**
+     * 특정 학습자료로부터 만든 TIL 을 모두 지운다. 자료 삭제 시 MaterialService 가 호출한다.
+     *
+     * <p>DB FK 가 ON DELETE CASCADE 라 자료만 지워도 행은 사라지지만, JPA 는 그 사실을 모른다.
+     * 영속성 컨텍스트에 남은 Til·TilTag 가 지워진 부모를 가리킨 채 flush 되면 예외가 나므로
+     * 자식부터 순서대로 지운다. (단건 삭제인 {@link #delete} 와 같은 이유)
+     */
+    @Transactional
+    public void deleteAllByMaterial(String materialId) {
+        List<Til> tils = tilRepository.findByMaterialId(materialId);
+        tils.forEach(til -> tilTagService.removeTags(til.getId()));
+        tilRepository.deleteAll(tils);
+    }
+
+    /** 특정 자료로부터 만든 TIL 개수. 자료를 지울 때 함께 사라질 기록 수를 알리는 데 쓴다. */
+    public long countByMaterial(String materialId) {
+        return tilRepository.countByMaterialId(materialId);
+    }
+
+    /** 여러 자료의 TIL 개수를 한 번에 센다. (자료 ID -> 개수, 0건인 자료는 0 으로 채운다) */
+    public Map<String, Long> countByMaterials(List<String> materialIds) {
+        if (materialIds.isEmpty()) {
+            return Map.of();
+        }
+
+        Map<String, Long> counts = new LinkedHashMap<>();
+        materialIds.forEach(id -> counts.put(id, 0L));
+        tilRepository.countByMaterialIds(materialIds)
+                .forEach(row -> counts.put(row.getMaterialId(), row.getCount()));
+        return counts;
     }
 
     /** 관련 학습 조회. 벡터 유사도와 태그 일치를 결합해 정렬한다. */

@@ -31,6 +31,30 @@ public interface TilRepository extends JpaRepository<Til, String>, JpaSpecificat
     /** 특정 학습자료로부터 생성된 TIL 목록 */
     List<Til> findByMaterialId(String materialId);
 
+    /** 특정 학습자료로부터 생성된 TIL 개수 */
+    long countByMaterialId(String materialId);
+
+    /**
+     * 여러 자료의 TIL 개수를 한 번의 조회로 모아온다.
+     *
+     * <p>자료 목록 화면이 자료마다 개수를 보여주므로, 자료 수만큼 count 쿼리가 나가지 않도록
+     * group by 로 한 번에 센다. TIL 이 하나도 없는 자료는 결과에 아예 나오지 않는다.
+     */
+    @Query("""
+            select t.material.id as materialId, count(t) as count
+            from Til t
+            where t.material.id in :materialIds
+            group by t.material.id
+            """)
+    List<MaterialTilCount> countByMaterialIds(@Param("materialIds") Collection<String> materialIds);
+
+    /** {@link #countByMaterialIds} 의 결과 한 줄. */
+    interface MaterialTilCount {
+        String getMaterialId();
+
+        long getCount();
+    }
+
     /**
      * 복습이 필요한 TIL.
      *

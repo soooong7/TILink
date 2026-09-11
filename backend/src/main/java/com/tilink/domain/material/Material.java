@@ -88,6 +88,16 @@ public class Material {
         this.processingStatus = ProcessingStatus.UPLOADED;
     }
 
+    /** 제목을 바꾼다. */
+    public void changeTitle(String title) {
+        this.title = title;
+    }
+
+    /** 소속 과목을 바꾼다. 이미 만들어진 청크·임베딩에는 영향이 없는 분류상의 변경이다. */
+    public void changeSubject(Subject subject) {
+        this.subject = subject;
+    }
+
     /** AI 분석 처리 상태를 변경한다. (setter 대신 의미가 드러나는 메서드로 노출) */
     public void changeProcessingStatus(ProcessingStatus status) {
         this.processingStatus = status;

@@ -1,6 +1,7 @@
 package com.tilink.domain.material;
 
 import com.tilink.domain.material.dto.MaterialResponse;
+import com.tilink.domain.material.dto.MaterialUpdateRequest;
 import com.tilink.domain.material.dto.MaterialUploadRequest;
 import com.tilink.domain.til.TilService;
 import com.tilink.domain.til.dto.TilDraftResponse;
@@ -12,9 +13,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -67,6 +71,26 @@ public class MaterialController {
             @PathVariable String materialId) {
 
         return materialService.findOne(principal.id(), materialId);
+    }
+
+    /** 학습자료 수정. 보내지 않은 필드는 바뀌지 않는다. */
+    @PatchMapping("/{materialId}")
+    public MaterialResponse update(
+            @AuthenticationPrincipal AuthenticatedUser principal,
+            @PathVariable String materialId,
+            @Valid @RequestBody MaterialUpdateRequest request) {
+
+        return materialService.update(principal.id(), materialId, request);
+    }
+
+    /** 학습자료 삭제. 이 자료로 만든 TIL 과 청크, 저장된 PDF 도 함께 사라진다. */
+    @DeleteMapping("/{materialId}")
+    public ResponseEntity<Void> delete(
+            @AuthenticationPrincipal AuthenticatedUser principal,
+            @PathVariable String materialId) {
+
+        materialService.delete(principal.id(), materialId);
+        return ResponseEntity.noContent().build();
     }
 
     /**
