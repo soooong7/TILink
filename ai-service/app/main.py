@@ -2,6 +2,7 @@ import logging
 
 from fastapi import FastAPI
 
+from app.core import storage
 from app.core.config import get_settings
 from app.routers import health, materials
 
@@ -10,6 +11,8 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)-5s %(na
 app = FastAPI(title="TILink AI Service", version="0.1.0")
 app.include_router(health.router)
 app.include_router(materials.router)
+
+storage.log_storage_root()
 
 
 if __name__ == "__main__":

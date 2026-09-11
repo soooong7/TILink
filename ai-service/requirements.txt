@@ -3,3 +3,6 @@ uvicorn[standard]==0.40.0
 sqlalchemy==2.0.44
 psycopg[binary]==3.2.12
 pydantic-settings==2.13.1
+pgvector==0.4.2
+pypdf==6.7.0
+openai==2.14.0

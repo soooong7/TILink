@@ -17,6 +17,8 @@ class ProcessingStatus:
     UPLOADED = "UPLOADED"
     PROCESSING = "PROCESSING"
     DONE = "DONE"
+    # 실패를 PROCESSING 으로 남겨 두면 "처리 중"과 구분되지 않아 영원히 기다리게 된다.
+    FAILED = "FAILED"
 
 
 class Material(Base):
