@@ -14,8 +14,8 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  // RequireAuth 가 넘겨준 원래 목적지. 없으면 학습자료 목록으로 보낸다.
-  const redirectTo = location.state?.from?.pathname ?? '/materials';
+  // RequireAuth 가 넘겨준 원래 목적지. 없으면 대시보드로 보낸다.
+  const redirectTo = location.state?.from?.pathname ?? '/dashboard';
 
   if (isAuthenticated) {
     return <Navigate to={redirectTo} replace />;

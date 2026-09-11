@@ -1,0 +1,305 @@
+/* 히어로는 학습자료 목록(MaterialListPage)과 같은 모양이다. 로그인 직후 첫 화면이
+   바뀌어도 같은 서비스로 읽히도록 맞췄다. */
+
+.hero {
+  background: var(--color-bg-subtle);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.heroInner {
+  max-width: var(--layout-max);
+  margin: 0 auto;
+  padding: var(--space-6) var(--space-5);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-5);
+}
+
+.heroTitle {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--color-navy);
+}
+
+.heroSubtitle {
+  margin-top: var(--space-2);
+  color: var(--color-text-muted);
+}
+
+/* ---------- 통계 ---------- */
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+}
+
+.statLabel {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  font-weight: 600;
+}
+
+.statValue {
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+/* 카드마다 색을 달리해 숫자 네 개가 한 덩어리로 보이지 않게 한다. */
+.blue {
+  background: var(--color-blue-weak);
+}
+
+.blue .statValue {
+  color: var(--color-blue);
+}
+
+.indigo {
+  background: var(--color-bg-subtle);
+}
+
+.indigo .statValue {
+  color: var(--color-navy);
+}
+
+.green {
+  background: var(--color-success-bg);
+}
+
+.green .statValue {
+  color: var(--color-success-text);
+}
+
+.amber {
+  background: var(--color-warning-bg);
+}
+
+.amber .statValue {
+  color: var(--color-warning-text);
+}
+
+/* ---------- 카드 ---------- */
+
+.columns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: var(--space-4);
+}
+
+.card {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  background: var(--color-bg);
+  box-shadow: var(--shadow-card);
+  margin-bottom: var(--space-4);
+}
+
+.columns .card {
+  margin-bottom: 0;
+}
+
+.columns + .card {
+  margin-top: var(--space-4);
+}
+
+.cardHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.cardTitle {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-navy);
+}
+
+.more {
+  flex-shrink: 0;
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+.more:hover {
+  color: var(--color-blue);
+}
+
+/* ---------- 목록 ---------- */
+
+.list {
+  list-style: none;
+  margin-top: var(--space-2);
+}
+
+.list li + li {
+  border-top: 1px solid var(--color-border);
+}
+
+.row {
+  display: block;
+  padding: var(--space-4) 0;
+  color: inherit;
+}
+
+.row:hover .rowTitle {
+  color: var(--color-blue);
+}
+
+.rowHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.rowTitle {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-navy);
+}
+
+.rowMeta {
+  margin-top: var(--space-2);
+  color: var(--color-text-muted);
+  font-size: 13px;
+}
+
+.sep {
+  margin: 0 var(--space-2);
+  opacity: 0.5;
+}
+
+.reviewBadge {
+  flex-shrink: 0;
+  border-radius: 999px;
+  padding: 2px var(--space-3);
+  font-size: 12px;
+  font-weight: 700;
+  background: var(--color-warning-bg);
+  color: var(--color-warning-text);
+}
+
+/* ---------- 관련 학습 ---------- */
+
+.related {
+  margin-top: var(--space-4);
+}
+
+.relatedFlow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.relatedNow {
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-bg-subtle);
+  color: var(--color-navy);
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.relatedArrow {
+  color: var(--color-text-muted);
+}
+
+.relatedPast {
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-blue-weak);
+  color: var(--color-blue);
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.relatedMeta {
+  margin-top: var(--space-3);
+  color: var(--color-text-muted);
+  font-size: 13px;
+}
+
+/* ---------- 과목별 막대 ---------- */
+
+.bars {
+  list-style: none;
+  margin-top: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.barLabel {
+  width: 120px;
+  flex-shrink: 0;
+  font-size: 14px;
+  color: var(--color-text);
+}
+
+.barTrack {
+  flex: 1;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--color-bg-subtle);
+  overflow: hidden;
+}
+
+.barFill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--color-blue);
+}
+
+.barCount {
+  width: 48px;
+  flex-shrink: 0;
+  text-align: right;
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+/* ---------- 상태 ---------- */
+
+.empty {
+  padding: var(--space-7) 0;
+  text-align: center;
+  color: var(--color-text-muted);
+}
+
+.sectionEmpty {
+  margin-top: var(--space-4);
+  color: var(--color-text-muted);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.error {
+  margin-bottom: var(--space-4);
+  background: #fdecee;
+  color: var(--color-danger);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  font-size: 14px;
+}

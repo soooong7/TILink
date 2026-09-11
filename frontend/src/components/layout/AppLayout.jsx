@@ -3,6 +3,7 @@ import { useAuth } from '../../auth/useAuth';
 import styles from './AppLayout.module.css';
 
 const MENUS = [
+  { to: '/dashboard', label: '대시보드' },
   { to: '/materials', label: '학습자료' },
   { to: '/tils', label: 'TIL' },
   { to: '/review', label: '복습' },
@@ -17,8 +18,11 @@ export default function AppLayout() {
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    logout();
+    // 이동을 먼저 예약한다. logout() 을 먼저 부르면 RequireAuth 가 지금 화면을
+    // "원래 가려던 위치"로 기록한 채 /login 으로 보내서, 다시 로그인했을 때
+    // 대시보드가 아니라 로그아웃한 화면으로 돌아간다.
     navigate('/login', { replace: true });
+    logout();
   };
 
   return (

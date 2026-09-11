@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { findMyMaterials } from '../api/materials';
 import { findAllSubjects } from '../api/subjects';
 import MaterialUploadDialog from '../components/MaterialUploadDialog';
@@ -42,7 +42,18 @@ export default function MaterialListPage() {
   const loading = result.requestKey !== requestKey;
   const { materials, error } = loading ? { materials: [], error: '' } : result;
 
-  const [uploadOpen, setUploadOpen] = useState(false);
+  // 대시보드의 "자료 업로드" 버튼이 navigate state 로 신호를 준다. 업로드는 별도 페이지가
+  // 아니라 이 화면의 모달이라, 다른 화면에서 바로 열려면 이런 신호가 필요하다.
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [uploadOpen, setUploadOpen] = useState(Boolean(location.state?.openUpload));
+
+  // 신호는 한 번만 쓴다. 지우지 않으면 새로고침하거나 뒤로 왔을 때 모달이 다시 열린다.
+  useEffect(() => {
+    if (location.state?.openUpload) {
+      navigate(location.pathname, { replace: true, state: null });
+    }
+  }, [location, navigate]);
 
   const handleUploaded = () => {
     setUploadOpen(false);
