@@ -1,12 +1,11 @@
 package com.tilink.global.ai;
 
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.reactive.function.client.WebClient;
 
+// 설정 클래스(AiServiceProperties)는 TilinkApplication 의 @ConfigurationPropertiesScan 이 등록한다.
 @Configuration
-@EnableConfigurationProperties(AiServiceProperties.class)
 public class AiServiceConfig {
 
     /**
