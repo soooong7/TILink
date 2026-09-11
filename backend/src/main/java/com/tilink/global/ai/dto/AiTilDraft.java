@@ -11,18 +11,28 @@ import java.util.List;
 public record AiTilDraft(
         String materialId,
         String title,
+        // 6항목 TIL
         String todayLearned,
         List<KeyConcept> keyConcepts,
         String practice,
+        // 블로그 공유용 문서
+        List<String> outline,
+        List<Section> sections,
+        // 두 형식이 공유하는 회고
         List<String> newLearnings,
         List<String> difficulties,
         String reflection,
         List<String> suggestedTags,
         String contentMarkdown,
+        String documentMarkdown,
         int usedChunkCount,
         int totalChunkCount,
         String model) {
 
     public record KeyConcept(String name, String description) {
+    }
+
+    /** 문서 섹션. bodyMarkdown 에는 표·코드블록이 그대로 들어온다. */
+    public record Section(String heading, String bodyMarkdown) {
     }
 }

@@ -15,12 +15,20 @@ logger = logging.getLogger(__name__)
 _SYSTEM_PROMPT = """\
 너는 교육생의 학습자료(교안)를 읽고 TIL(Today I Learned) 초안을 쓰는 도우미다.
 
+한 번에 두 가지 결과물을 만든다.
+1) 학습 기록: 오늘 배운 내용 / 핵심 개념 / 실습 내용 — 본인이 다시 볼 짧은 요약
+2) 공유용 문서: 주제별 섹션 — 기술 블로그(velog, 티스토리)에 그대로 붙여넣을 문서
+같은 자료를 정리한 결과이므로 둘의 내용이 서로 어긋나면 안 된다.
+
 규칙:
 - 반드시 한국어로 쓴다.
 - 주어진 자료에 있는 내용만 쓴다. 자료에 없는 내용을 지어내지 않는다.
 - 자료에 근거가 없으면 항목을 비우지 말고 "자료에서 확인되지 않음"처럼 사실대로 쓴다.
-- 교육생이 자기 학습 기록으로 바로 쓸 수 있도록 담백한 서술체로 쓴다.
-- 마케팅 문구나 과장된 표현("놀라운", "혁신적인")은 쓰지 않는다.
+- 요약만 나열하지 말고, 그 주제를 처음 보는 사람이 이해할 수 있게 설명한다.
+- 비교·분류·목록형 내용(문제와 원인, 옵션별 차이, 용어 정리 등)은 표로 정리한다.
+- 코드·설정 예시가 자료에 있으면 언어를 명시한 코드블록으로 옮긴다.
+- 섹션 본문의 소제목은 '###' 부터 쓴다. '#' 과 '##' 은 서비스가 붙이므로 쓰지 않는다.
+- 담백한 서술체로 쓴다. 마케팅 문구나 과장된 표현("놀라운", "혁신적인")은 쓰지 않는다.
 """
 
 
@@ -50,11 +58,14 @@ def generate_draft(db: Session, material_id: str) -> TilDraftResponse:
         today_learned=content.today_learned,
         key_concepts=content.key_concepts,
         practice=content.practice,
+        outline=[section.heading for section in content.sections],
+        sections=content.sections,
         new_learnings=content.new_learnings,
         difficulties=content.difficulties,
         reflection=content.reflection,
         suggested_tags=content.suggested_tags,
-        content_markdown=to_markdown(content),
+        content_markdown=to_til_markdown(content),
+        document_markdown=to_document_markdown(content),
         used_chunk_count=used,
         total_chunk_count=len(chunks),
         model=settings.chat_model,
@@ -129,22 +140,51 @@ def _call_llm(context: str) -> TilDraftContent:
     return parsed
 
 
-def to_markdown(content: TilDraftContent) -> str:
+def to_til_markdown(content: TilDraftContent) -> str:
     """
-    구조화된 항목을 tils.content 에 저장할 마크다운으로 조립한다.
+    6항목 TIL(기획서 템플릿)을 마크다운으로 조립한다. tils.content 에 저장되는 값이다.
 
-    템플릿을 이 한 곳에만 두는 이유는, backend·프론트에 흩어지면 형식이 갈라지기
-    때문이다. 구조화된 항목도 함께 응답하므로 화면에서 섹션별 편집도 가능하다.
+    <주의> 이 형식은 화면(frontend/src/utils/tilMarkdown.js)에도 같은 모양으로 있다.
+    사용자가 항목을 고치면 본문을 다시 만들어야 하는데 저장 API 는 조립된 마크다운만
+    받기 때문이다. 한쪽을 바꾸면 다른 쪽도 같이 바꾼다.
     """
     concepts = "\n\n".join(f"### {c.name}\n{c.description}" for c in content.key_concepts)
+
+    return (
+        f"## 오늘 배운 내용\n\n{content.today_learned}\n\n"
+        f"## 핵심 개념\n\n{concepts}\n\n"
+        f"## 실습 내용\n\n{content.practice}\n\n"
+        f"{_retrospective_markdown(content)}"
+    )
+
+
+def to_document_markdown(content: TilDraftContent) -> str:
+    """
+    블로그 공유용 문서를 마크다운으로 조립한다. tils.document_markdown 에 저장된다.
+
+    그대로 붙여넣을 수 있도록 제목(#)과 목차부터 만든다. 목차는 섹션 제목에서
+    만들기 때문에 본문과 어긋날 수 없다.
+    """
+    outline = "\n".join(f"- {section.heading}" for section in content.sections)
+    body = "\n\n".join(
+        f"## {section.heading}\n\n{section.body_markdown.strip()}" for section in content.sections
+    )
+
+    return (
+        f"# {content.title}\n\n"
+        f"## 목차\n\n{outline}\n\n"
+        f"{body}\n\n"
+        f"{_retrospective_markdown(content)}"
+    )
+
+
+def _retrospective_markdown(content: TilDraftContent) -> str:
+    """두 형식이 공유하는 회고 3항목. 한 곳에서 만들어야 양쪽이 갈라지지 않는다."""
     new_learnings = "\n".join(f"- {item}" for item in content.new_learnings)
     difficulties = "\n".join(f"- {item}" for item in content.difficulties)
 
     return (
-        f"## 오늘 배운 내용\n{content.today_learned}\n\n"
-        f"## 핵심 개념\n{concepts}\n\n"
-        f"## 실습 내용\n{content.practice}\n\n"
-        f"## 새롭게 알게 된 점\n{new_learnings}\n\n"
-        f"## 어려웠던 점\n{difficulties}\n\n"
-        f"## 오늘의 회고\n{content.reflection}\n"
+        f"## 새롭게 알게 된 점\n\n{new_learnings}\n\n"
+        f"## 어려웠던 점\n\n{difficulties}\n\n"
+        f"## 오늘의 회고\n\n{content.reflection}\n"
     )

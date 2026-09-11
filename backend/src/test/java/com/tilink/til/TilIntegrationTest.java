@@ -94,11 +94,16 @@ class TilIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.title").value("Spring AI 개요"))
                 .andExpect(jsonPath("$.suggestedTags[0]").value("Spring AI"))
-                .andExpect(jsonPath("$.contentMarkdown").value("## 오늘 배운 내용\n내용"))
+                .andExpect(jsonPath("$.keyConcepts[0].name").value("ChatClient"))
+                .andExpect(jsonPath("$.outline[0]").value("ChatClient API"))
+                .andExpect(jsonPath("$.sections[0].bodyMarkdown").value("### 사용법\n설명"))
+                .andExpect(jsonPath("$.contentMarkdown").value("## 오늘 배운 내용\n\n오늘 배운 내용"))
+                .andExpect(jsonPath("$.documentMarkdown").value("# Spring AI 개요\n\n## 목차\n\n- ChatClient API"))
                 .andExpect(jsonPath("$.usedChunkCount").value(35));
 
         // 초안은 저장되지 않는다. 사용자가 고친 뒤 저장 API 로 보내는 흐름이다.
-        assertThat(tilRepository.count()).isZero();
+        // (개발 DB 를 공유하므로 전체 개수가 아니라 이 테스트가 만든 자료 기준으로 확인한다)
+        assertThat(tilRepository.findByMaterialId(material.getId())).isEmpty();
     }
 
     @Test
@@ -129,6 +134,7 @@ class TilIntegrationTest {
         String body = createTil("Spring AI 정리", "본문", List.of("Spring AI", "RAG"));
 
         String id = JsonPath.read(body, "$.id");
+        assertThat((String) JsonPath.read(body, "$.document")).startsWith("# Spring AI 정리");
         assertThat((Boolean) JsonPath.read(body, "$.embeddingReady")).isTrue();
         assertThat((List<String>) JsonPath.read(body, "$.tags")).containsExactly("Spring AI", "RAG");
         assertThat(tilRepository.findById(id).orElseThrow().getEmbedding()).isNotNull();
@@ -295,6 +301,7 @@ class TilIntegrationTest {
             put("materialId", material.getId());
             put("title", title);
             put("content", content);
+            put("document", "# " + title + "\n\n## 목차\n\n- 섹션");
             put("tags", tags);
         }});
 
@@ -326,10 +333,15 @@ class TilIntegrationTest {
 
     private AiTilDraft draft() {
         return new AiTilDraft(
-                material.getId(), "Spring AI 개요", "오늘 배운 내용",
-                List.of(new AiTilDraft.KeyConcept("ChatClient", "설명")),
-                "실습", List.of("새로 안 점"), List.of("어려웠던 점"), "회고",
-                List.of("Spring AI", "RAG"), "## 오늘 배운 내용\n내용", 35, 35, "gpt-5-mini");
+                material.getId(), "Spring AI 개요",
+                "오늘 배운 내용", List.of(new AiTilDraft.KeyConcept("ChatClient", "설명")), "실습",
+                List.of("ChatClient API"),
+                List.of(new AiTilDraft.Section("ChatClient API", "### 사용법\n설명")),
+                List.of("새로 안 점"), List.of("어려웠던 점"), "회고",
+                List.of("Spring AI", "RAG"),
+                "## 오늘 배운 내용\n\n오늘 배운 내용",
+                "# Spring AI 개요\n\n## 목차\n\n- ChatClient API",
+                35, 35, "gpt-5-mini");
     }
 
     private User givenUser() {

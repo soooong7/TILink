@@ -12,5 +12,6 @@ import java.util.List;
 public record TilUpdateRequest(
         @Size(max = 255) String title,
         String content,
+        String document,
         List<@Size(max = 100) String> tags) {
 }

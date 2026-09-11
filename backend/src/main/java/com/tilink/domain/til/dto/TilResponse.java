@@ -14,6 +14,8 @@ public record TilResponse(
         String id,
         String title,
         String content,
+        // 블로그 공유용 문서. 문서 없이 저장된 TIL 은 null 이다.
+        String document,
         MaterialSummary material,
         List<String> tags,
         boolean embeddingReady,
@@ -29,6 +31,7 @@ public record TilResponse(
                 til.getId(),
                 til.getTitle(),
                 til.getContent(),
+                til.getDocumentMarkdown(),
                 new MaterialSummary(
                         til.getMaterial().getId(),
                         til.getMaterial().getTitle(),

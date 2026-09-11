@@ -54,9 +54,16 @@ public class Til {
     @Column(name = "title", length = 255, nullable = false)
     private String title;
 
-    /** TIL 본문 (템플릿 구조를 포함한 마크다운) */
+    /** TIL 본문. 기획서의 6항목 템플릿을 담은 마크다운이며, 임베딩도 이 값으로 만든다. */
     @Column(name = "content", nullable = false, columnDefinition = "text")
     private String content;
+
+    /**
+     * 블로그 공유용 긴 문서(목차 + 주제별 섹션). content 와 쓰임이 달라 따로 둔다.
+     * 문서를 만들지 않고 저장한 TIL 이 있을 수 있어 null 을 허용한다.
+     */
+    @Column(name = "document_markdown", columnDefinition = "text")
+    private String documentMarkdown;
 
     /**
      * TIL 본문 임베딩 (1536차원). 아직 생성되지 않았을 수 있어 null 을 허용한다.
@@ -79,18 +86,21 @@ public class Til {
     private LocalDateTime updatedAt;
 
     @Builder
-    private Til(User user, Material material, String title, String content, float[] embedding) {
+    private Til(User user, Material material, String title, String content, String documentMarkdown,
+            float[] embedding) {
         this.user = user;
         this.material = material;
         this.title = title;
         this.content = content;
+        this.documentMarkdown = documentMarkdown;
         this.embedding = embedding;
     }
 
     /** 사용자가 TIL 내용을 수정했을 때 호출한다. */
-    public void updateContent(String title, String content) {
+    public void updateContent(String title, String content, String documentMarkdown) {
         this.title = title;
         this.content = content;
+        this.documentMarkdown = documentMarkdown;
     }
 
     /** 본문이 바뀌어 임베딩을 다시 생성했을 때 호출한다. */

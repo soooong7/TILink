@@ -77,6 +77,9 @@ public class TilService {
                 .material(material)
                 .title(request.title())
                 .content(request.content())
+                .documentMarkdown(request.document())
+                // 임베딩은 6항목 TIL 본문으로 만든다. 공유용 문서는 같은 내용을 길게 풀어 쓴
+                // 것이라, 짧고 밀도 높은 쪽이 유사도 비교에 유리하다.
                 .embedding(createEmbeddingOrNull(request.content()))
                 .build());
 
@@ -129,9 +132,10 @@ public class TilService {
 
         String title = StringUtils.hasText(request.title()) ? request.title() : til.getTitle();
         String content = StringUtils.hasText(request.content()) ? request.content() : til.getContent();
+        String document = request.document() != null ? request.document() : til.getDocumentMarkdown();
         boolean contentChanged = !content.equals(til.getContent());
 
-        til.updateContent(title, content);
+        til.updateContent(title, content, document);
         // 임베딩이 없는 상태(저장 당시 AI 서비스 장애)라면 본문이 그대로여도 다시 시도한다.
         if (contentChanged || til.getEmbedding() == null) {
             til.updateEmbedding(createEmbeddingOrNull(content));
