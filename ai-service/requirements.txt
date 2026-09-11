@@ -6,3 +6,4 @@ pydantic-settings==2.13.1
 pgvector==0.4.2
 pypdf==6.7.0
 openai==2.14.0
+tiktoken==0.14.0

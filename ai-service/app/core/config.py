@@ -36,6 +36,16 @@ class Settings(BaseSettings):
     embedding_max_retries: int = 3
     embedding_retry_base_seconds: float = 1.0
 
+    # ---- TIL 초안 생성 ----
+    chat_model: str = "gpt-5-mini"
+    # 컨텍스트에 넣을 입력 토큰 상한. 교안은 페이지당 약 260토큰이라
+    # 12만 토큰이면 400페이지가 넘는 자료도 통째로 들어간다. 이를 넘기면 앞에서부터
+    # 쓰고 잘라내며, 잘렸다는 사실은 usedChunkCount 로 드러난다.
+    til_draft_max_input_tokens: int = 120_000
+    # 긴 자료는 응답까지 오래 걸린다. 기본 타임아웃(10분)보다 짧게 잡아 두면
+    # 백그라운드가 아닌 동기 요청에서 호출자가 무한정 기다리지 않는다.
+    chat_timeout_seconds: float = 180.0
+
     # ---- 청킹 ----
     # 검색 품질 기준으로 정한 값이다. 모델 입력 한계(8191토큰)와는 무관하다.
     # 청크가 크면 한 벡터에 여러 주제가 섞여 유사도 변별력이 떨어지고,
