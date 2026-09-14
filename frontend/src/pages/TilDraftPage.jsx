@@ -247,10 +247,6 @@ export default function TilDraftPage() {
 
             {tab === 'markdown' && (
               <div className={styles.pane}>
-                <p className={styles.hint}>
-                  아래 원문을 그대로 복사해 티스토리·velog·GitHub 등 마크다운을 지원하는 곳에
-                  붙여넣으세요.
-                </p>
                 <MarkdownSource markdown={document} />
               </div>
             )}

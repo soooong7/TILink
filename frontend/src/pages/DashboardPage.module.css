@@ -170,6 +170,11 @@
   font-size: 15px;
   font-weight: 700;
   color: var(--color-navy);
+  /* 한 줄짜리 행이라 긴 제목은 말줄임한다. min-width:0 이 없으면 배지가 눌린다. */
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .rowMeta {

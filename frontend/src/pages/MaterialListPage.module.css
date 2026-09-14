@@ -48,7 +48,8 @@
 }
 
 .card {
-  display: block;
+  display: flex;
+  flex-direction: column;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   padding: var(--space-5);
@@ -72,7 +73,15 @@
 .cardTitle {
   font-size: 17px;
   font-weight: 700;
+  line-height: 1.4;
   color: var(--color-navy);
+  /* min-width:0 이 없으면 긴 제목이 배지를 밀어낸다. 제목은 두 줄까지만 보여 준다. */
+  min-width: 0;
+  overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .cardDate {
@@ -82,7 +91,9 @@
 }
 
 .cardTags {
-  margin-top: var(--space-3);
+  /* 제목 줄 수가 달라도 과목 태그는 카드 아래쪽에 나란히 놓인다. */
+  margin-top: auto;
+  padding-top: var(--space-3);
 }
 
 .empty {

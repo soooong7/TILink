@@ -4,6 +4,9 @@
   border-radius: var(--radius-sm);
   font-size: 12px;
   font-weight: 700;
+  /* 카드 제목 옆 flex 항목으로 쓰이므로, 제목이 길어도 배지가 눌리거나 줄바꿈되면 안 된다. */
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .uploaded {

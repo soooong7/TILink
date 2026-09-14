@@ -116,14 +116,7 @@ export default function TilDetailPage() {
             <div className={styles.pane}>
               {tab === 'til' && <MarkdownView markdown={til.content} />}
               {tab === 'preview' && <MarkdownView markdown={til.document} />}
-              {tab === 'markdown' && (
-                <>
-                  <p className={styles.hint}>
-                    아래 원문을 그대로 복사해 티스토리·velog 등에 붙여넣으세요.
-                  </p>
-                  <MarkdownSource markdown={til.document} />
-                </>
-              )}
+              {tab === 'markdown' && <MarkdownSource markdown={til.document} />}
             </div>
           </div>
 

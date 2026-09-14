@@ -107,7 +107,9 @@ export default function MaterialListPage() {
                 className={styles.card}
               >
                 <div className={styles.cardHead}>
-                  <span className={styles.cardTitle}>{material.title}</span>
+                  <span className={styles.cardTitle} title={material.title}>
+                    {material.title}
+                  </span>
                   <StatusBadge status={material.processingStatus} />
                 </div>
                 <p className={styles.cardDate}>{formatDate(material.uploadedAt)}</p>

@@ -154,7 +154,9 @@ export default function DashboardPage() {
                       <li key={material.id}>
                         <Link to={`/materials/${material.id}`} className={styles.row}>
                           <div className={styles.rowHead}>
-                            <span className={styles.rowTitle}>{material.title}</span>
+                            <span className={styles.rowTitle} title={material.title}>
+                              {material.title}
+                            </span>
                             <StatusBadge status={material.processingStatus} />
                           </div>
                           <p className={styles.rowMeta}>
