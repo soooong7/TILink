@@ -43,9 +43,24 @@ export class ApiError extends Error {
   }
 }
 
+/**
+ * responseType: 'blob' 요청(파일 다운로드)은 에러 응답 JSON 도 Blob 으로 온다.
+ * 그대로 두면 code·message 를 읽지 못해 모든 실패가 "서버 오류"로 보이므로 다시 파싱한다.
+ */
+async function readErrorBody(data) {
+  if (!(data instanceof Blob)) {
+    return data ?? {};
+  }
+  try {
+    return JSON.parse(await data.text());
+  } catch {
+    return {};
+  }
+}
+
 client.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error) => {
     const { response } = error;
 
     if (!response) {
@@ -60,7 +75,7 @@ client.interceptors.response.use(
       unauthorizedHandler?.();
     }
 
-    const data = response.data ?? {};
+    const data = await readErrorBody(response.data);
     return Promise.reject(
       new ApiError(
         data.code ?? 'INTERNAL_ERROR',

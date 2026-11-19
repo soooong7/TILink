@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { deleteMaterial, findMaterial } from '../api/materials';
+import { deleteMaterial, downloadMaterialFile, findMaterial } from '../api/materials';
 import MaterialEditDialog from '../components/MaterialEditDialog';
 import Button from '../components/ui/Button';
 import ConfirmDialog from '../components/ui/ConfirmDialog';
@@ -39,6 +39,9 @@ export default function MaterialDetailPage() {
   const [result, setResult] = useState({ materialId: null, material: null, error: '' });
   // 'edit' | 'delete' | null. 한 번에 하나만 뜨므로 boolean 두 개 대신 한 값으로 둔다.
   const [dialog, setDialog] = useState(null);
+  // PDF 가 크면 받는 데 몇 초 걸린다. 그동안 버튼을 막아 같은 파일을 여러 번 받지 않게 한다.
+  const [downloading, setDownloading] = useState(false);
+  const [downloadError, setDownloadError] = useState('');
 
   useEffect(() => {
     let cancelled = false;
@@ -57,6 +60,18 @@ export default function MaterialDetailPage() {
 
   const loading = result.materialId !== materialId;
   const { material, error } = loading ? { material: null, error: '' } : result;
+
+  const handleDownload = async () => {
+    setDownloading(true);
+    setDownloadError('');
+    try {
+      await downloadMaterialFile(materialId, material.originalFileName);
+    } catch (err) {
+      setDownloadError(err.message);
+    } finally {
+      setDownloading(false);
+    }
+  };
 
   const handleDelete = async () => {
     await deleteMaterial(materialId);
@@ -113,6 +128,9 @@ export default function MaterialDetailPage() {
             >
               AI로 TIL 만들기
             </Button>
+            <Button variant="secondary" disabled={downloading} onClick={handleDownload}>
+              {downloading ? '내려받는 중…' : '원본 PDF 다운로드'}
+            </Button>
             <Button variant="secondary" onClick={() => setDialog('edit')}>
               수정
             </Button>
@@ -124,8 +142,7 @@ export default function MaterialDetailPage() {
             )}
           </div>
 
-          {/* 파일 다운로드 API 는 아직 백엔드에 없다. 있는 척하지 않는다. */}
-          <p className={styles.notice}>원본 파일 다운로드는 다음 단계에서 연결됩니다.</p>
+          {downloadError && <p className={styles.error}>{downloadError}</p>}
 
           {dialog === 'edit' && (
             <MaterialEditDialog

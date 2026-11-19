@@ -34,6 +34,29 @@ export async function findMaterial(materialId) {
 }
 
 /**
+ * GET /api/materials/{id}/file -> PDF 바이너리
+ *
+ * 인증 헤더가 필요해서 <a href> 로는 받을 수 없다. blob 으로 받아 임시 URL 을 만든 뒤
+ * 브라우저 다운로드를 일으킨다. 파일명은 응답 헤더를 파싱하지 않고 상세 응답의
+ * originalFileName 을 그대로 쓴다(서버가 헤더에 넣는 값과 같은 값이다).
+ */
+export async function downloadMaterialFile(materialId, fileName) {
+  const { data } = await client.get(`/materials/${materialId}/file`, {
+    responseType: 'blob',
+  });
+
+  const url = URL.createObjectURL(data);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = fileName;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  // click() 직후 바로 해제해도 다운로드는 이미 시작된 상태다. 남겨두면 탭을 닫을 때까지 메모리를 잡는다.
+  URL.revokeObjectURL(url);
+}
+
+/**
  * PATCH /api/materials/{id} -> MaterialResponse
  *
  * 보내지 않은 필드는 서버가 건드리지 않는다. 파일 교체는 지원하지 않는다.
