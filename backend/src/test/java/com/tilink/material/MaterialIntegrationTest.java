@@ -1,10 +1,12 @@
 package com.tilink.material;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -332,6 +334,47 @@ class MaterialIntegrationTest {
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + ownerToken))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[?(@.id=='" + materialId + "')].tilCount").value(2));
+    }
+
+    @Test
+    void 내_자료의_원본_PDF_를_원본_파일명으로_내려받는다() throws Exception {
+        String materialId = upload(ownerToken, infra.getId(), null, "도커 정리.pdf");
+
+        byte[] body = mockMvc.perform(get("/api/materials/{id}/file", materialId)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + ownerToken))
+                .andExpect(status().isOk())
+                .andExpect(header().string(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_PDF_VALUE))
+                // 한글 파일명은 RFC 5987 인코딩(filename*=UTF-8'')으로 내려가야 브라우저에서 깨지지 않는다.
+                .andExpect(header().string(HttpHeaders.CONTENT_DISPOSITION,
+                        containsString("filename*=UTF-8''%EB%8F%84%EC%BB%A4%20%EC%A0%95%EB%A6%AC.pdf")))
+                .andReturn().getResponse().getContentAsByteArray();
+
+        assertThat(body).isEqualTo(PDF_BYTES);
+    }
+
+    @Test
+    void 남의_자료는_내려받을_수_없다() throws Exception {
+        String materialId = upload(ownerToken, infra.getId(), "내 자료", "mine.pdf");
+
+        User other = givenUser();
+        String otherToken = jwtTokenProvider.createAccessToken(other.getId(), other.getEmail());
+
+        mockMvc.perform(get("/api/materials/{id}/file", materialId)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + otherToken))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value("MATERIAL_NOT_FOUND"));
+    }
+
+    @Test
+    void 디스크에서_파일이_사라졌으면_STORED_FILE_NOT_FOUND_를_반환한다() throws Exception {
+        String materialId = upload(ownerToken, infra.getId(), "사라진 파일", "gone.pdf");
+        Material material = materialRepository.findById(materialId).orElseThrow();
+        Files.delete(Path.of(STORAGE_ROOT).resolve(material.getFileUrl()));
+
+        mockMvc.perform(get("/api/materials/{id}/file", materialId)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + ownerToken))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value("STORED_FILE_NOT_FOUND"));
     }
 
     // ==========================================

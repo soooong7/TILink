@@ -1,5 +1,6 @@
 package com.tilink.domain.material;
 
+import com.tilink.domain.material.dto.MaterialFileResponse;
 import com.tilink.domain.material.dto.MaterialResponse;
 import com.tilink.domain.material.dto.MaterialUpdateRequest;
 import com.tilink.domain.material.dto.MaterialUploadRequest;
@@ -98,6 +99,12 @@ public class MaterialService {
     public MaterialResponse findOne(String userId, String materialId) {
         Material material = getOwnedMaterial(userId, materialId);
         return MaterialResponse.from(material, tilService.countByMaterial(materialId));
+    }
+
+    /** 내 학습자료의 원본 PDF. 소유자 검사는 상세 조회와 같은 규칙(남의 자료는 404)을 따른다. */
+    public MaterialFileResponse loadFile(String userId, String materialId) {
+        Material material = getOwnedMaterial(userId, materialId);
+        return new MaterialFileResponse(fileStorage.load(material.getFileUrl()), material.getOriginalFileName());
     }
 
     /**

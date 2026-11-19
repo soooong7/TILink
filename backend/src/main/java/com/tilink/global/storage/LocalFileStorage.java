@@ -11,6 +11,8 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -54,6 +56,18 @@ public class LocalFileStorage implements FileStorage {
         }
 
         return new StoredFile(key, originalFileName, file.getSize());
+    }
+
+    @Override
+    public Resource load(String key) {
+        Path path = resolveInsideRoot(key);
+        // DB 에는 행이 있는데 파일이 없는 경우다(수동 삭제, 저장 루트 변경 등). 자료 자체가 없는
+        // MATERIAL_NOT_FOUND 와 구분해야 원인을 추적할 수 있어 로그를 남기고 별도 코드로 알린다.
+        if (!Files.isRegularFile(path) || !Files.isReadable(path)) {
+            log.warn("저장된 파일을 찾을 수 없음. key={}", key);
+            throw new BusinessException(ErrorCode.STORED_FILE_NOT_FOUND);
+        }
+        return new FileSystemResource(path);
     }
 
     @Override

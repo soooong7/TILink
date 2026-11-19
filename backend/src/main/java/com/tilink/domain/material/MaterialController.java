@@ -1,5 +1,6 @@
 package com.tilink.domain.material;
 
+import com.tilink.domain.material.dto.MaterialFileResponse;
 import com.tilink.domain.material.dto.MaterialResponse;
 import com.tilink.domain.material.dto.MaterialUpdateRequest;
 import com.tilink.domain.material.dto.MaterialUploadRequest;
@@ -7,8 +8,12 @@ import com.tilink.domain.til.TilService;
 import com.tilink.domain.til.dto.TilDraftResponse;
 import com.tilink.global.security.AuthenticatedUser;
 import jakarta.validation.Valid;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.Resource;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -71,6 +76,28 @@ public class MaterialController {
             @PathVariable String materialId) {
 
         return materialService.findOne(principal.id(), materialId);
+    }
+
+    /**
+     * 학습자료 원본 PDF 다운로드.
+     *
+     * <p>파일명은 RFC 6266 의 {@code filename*=UTF-8''...} 형식으로 내려간다. 한글 파일명을
+     * 그대로 {@code filename=} 에 넣으면 브라우저마다 깨지는 방식이 다르다.
+     */
+    @GetMapping("/{materialId}/file")
+    public ResponseEntity<Resource> downloadFile(
+            @AuthenticationPrincipal AuthenticatedUser principal,
+            @PathVariable String materialId) {
+
+        MaterialFileResponse file = materialService.loadFile(principal.id(), materialId);
+        ContentDisposition disposition = ContentDisposition.attachment()
+                .filename(file.originalFileName(), StandardCharsets.UTF_8)
+                .build();
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_PDF)
+                .header(HttpHeaders.CONTENT_DISPOSITION, disposition.toString())
+                .body(file.resource());
     }
 
     /** 학습자료 수정. 보내지 않은 필드는 바뀌지 않는다. */

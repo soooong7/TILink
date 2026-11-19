@@ -28,6 +28,8 @@ public enum ErrorCode {
     // 413. Spring 7 에서 PAYLOAD_TOO_LARGE 는 CONTENT_TOO_LARGE 로 이름이 바뀌었다(같은 코드).
     FILE_TOO_LARGE(HttpStatus.CONTENT_TOO_LARGE, "업로드할 수 있는 파일 크기를 초과했습니다."),
     FILE_STORAGE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "파일을 저장하지 못했습니다."),
+    // 자료 행은 있는데 디스크에 파일이 없는 경우. MATERIAL_NOT_FOUND 와 구분해 데이터 불일치를 드러낸다.
+    STORED_FILE_NOT_FOUND(HttpStatus.NOT_FOUND, "원본 파일을 찾을 수 없습니다."),
     TIL_NOT_FOUND(HttpStatus.NOT_FOUND, "TIL 을 찾을 수 없습니다."),
     // 본문 임베딩이 아직 없는 TIL 로 관련 학습을 조회한 경우.
     // AI 서비스 장애로 임베딩 없이 저장된 TIL 이 있을 수 있어 상태로 구분해 알린다.

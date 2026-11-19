@@ -1,5 +1,6 @@
 package com.tilink.global.storage;
 
+import org.springframework.core.io.Resource;
 import org.springframework.web.multipart.MultipartFile;
 
 /**
@@ -19,6 +20,14 @@ public interface FileStorage {
      * @return 저장 결과(키·원본 파일명·크기)
      */
     StoredFile store(MultipartFile file, String userId);
+
+    /**
+     * 저장 키에 해당하는 파일을 읽을 수 있는 {@link Resource} 로 돌려준다.
+     *
+     * <p>{@code Path} 가 아니라 {@code Resource} 인 이유는 S3 구현체도 같은 타입(스트림)으로
+     * 돌려줄 수 있어야 하기 때문이다. 파일이 없으면 {@code STORED_FILE_NOT_FOUND} 를 던진다.
+     */
+    Resource load(String key);
 
     /** 저장 키에 해당하는 파일을 지운다. 이미 없으면 아무 일도 하지 않는다. */
     void delete(String key);
